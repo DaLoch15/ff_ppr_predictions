@@ -1,0 +1,245 @@
+# Fantasy Football Projections - Configuration File
+# This file contains all configurable parameters for the projection system
+
+# Database configuration
+database:
+  path: fantasy_football.db
+  backup_path: backups/
+  pool_size: 5
+  connection_timeout: 30
+
+# Model configuration
+model:
+  positions: [QB, RB, WR, TE]
+  min_games_for_projection: 2
+  min_snap_percentage: 20
+
+  # Training parameters
+  training:
+    test_size: 0.2
+    n_estimators: 200
+    max_depth: 6
+    learning_rate: 0.03
+    random_state: 42
+    cv_folds: 5
+
+    # Ensemble weights
+    ensemble_weights:
+      xgboost: 0.5
+      random_forest: 0.25
+      gradient_boosting: 0.25
+
+# Data sources and API keys
+data_sources:
+  # The Odds API for Vegas lines (get key from https://the-odds-api.com/)
+  odds_api_key: ${ODDS_API_KEY}
+
+  # Weather API (optional)
+  weather_api_key: ${WEATHER_API_KEY}
+
+  # Update frequency
+  update_frequency: weekly
+
+  # Data fetch settings
+  fetch_settings:
+    timeout: 30
+    retry_attempts: 3
+    cache_enabled: true
+    cache_duration_hours: 24
+
+# Projection configuration
+projections:
+  # Rolling average windows
+  rolling_windows:
+    short: 3
+    medium: 5
+    long: 10
+
+  # Matchup adjustment parameters
+  matchup_adjustment:
+    min_multiplier: 0.75
+    max_multiplier: 1.25
+    enabled: true
+
+  # Game script adjustment
+  game_script_adjustment:
+    enabled: true
+    per_point_spread: 0.05  # 5% per point
+    max_adjustment: 0.15     # Max 15% adjustment
+
+  # Pace adjustment
+  pace_adjustment:
+    enabled: true
+    baseline_total: 46.0
+    max_adjustment: 0.10
+
+  # Confidence score thresholds
+  confidence_thresholds:
+    high: 0.8
+    medium: 0.6
+    low: 0.4
+
+  # Floor and ceiling calculations
+  floor_ceiling:
+    floor_multiplier: 0.60   # 60% of projection
+    ceiling_multiplier: 1.50 # 150% of projection
+
+# Output configuration
+output:
+  directory: output/projections
+  format: csv
+  include_timestamp: true
+  report_format: txt
+
+  # Output file settings
+  files:
+    rankings: true
+    value_plays: true
+    lineups: true
+    summary: true
+
+  # Logging settings
+  logging:
+    level: INFO
+    file: logs/fantasy_projections.log
+    console: true
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# DFS (Daily Fantasy Sports) configuration
+dfs:
+  salary_cap: 50000
+
+  # Position requirements
+  positions:
+    QB: 1
+    RB: 2
+    WR: 3
+    TE: 1
+    FLEX: 1
+
+  # Lineup strategies
+  strategies:
+    cash_game:
+      projection_weight: 0.4
+      floor_weight: 0.4
+      confidence_weight: 0.2
+
+    gpp_balanced:
+      projection_weight: 0.5
+      ceiling_weight: 0.5
+
+    gpp_ceiling:
+      ceiling_weight: 0.8
+      projection_weight: 0.2
+
+    gpp_contrarian:
+      ceiling_weight: 0.6
+      value_weight: 0.4
+
+  # Salary generation (for mock data)
+  mock_salary:
+    per_point: 1000
+    position_multipliers:
+      QB: 0.9
+      RB: 1.0
+      WR: 1.0
+      TE: 0.85
+    min_salary: 3000
+    max_salary: 10000
+
+# Feature engineering settings
+features:
+  # Universal features
+  universal:
+    - target_share_vs_allowed
+    - implied_game_script
+    - high_total_game
+    - consistency_score
+    - momentum
+    - home_advantage
+    - weather_impact
+
+  # Position-specific features
+  rb_features:
+    - game_script_run
+    - pass_catching_role
+    - goal_line_back
+    - rb_opportunity_rate
+
+  wr_features:
+    - deep_threat
+    - high_route_runner
+    - wr1_role
+    - red_zone_wr
+    - wr_pass_game_volume
+
+  te_features:
+    - te_premium
+    - red_zone_role
+    - receiving_te_rate
+
+  qb_features:
+    - pass_heavy_script
+    - shootout_potential
+    - high_pressure
+    - qb_plus_matchup
+
+# Value play identification
+value_plays:
+  categories:
+    high_ceiling:
+      enabled: true
+      top_n: 20
+      min_ceiling_percentile: 0.75
+
+    safe_floor:
+      enabled: true
+      top_n: 20
+      min_confidence: 0.7
+      min_floor_percentile: 0.70
+
+    leverage:
+      enabled: true
+      top_n: 15
+      min_position_rank: 15
+      min_ceiling_percentile: 0.75
+
+    positive_regression:
+      enabled: true
+      top_n: 15
+      min_ceiling_ratio_percentile: 0.80
+
+    best_values:
+      enabled: true
+      top_n: 20
+      sort_by: value_score
+
+# Tier calculation
+tiers:
+  enabled: true
+  method: point_drop  # or 'clustering'
+  point_drop_percentile: 0.75
+  max_tiers_per_position: 8
+
+# Backtest configuration
+backtest:
+  default_weeks: 4
+  metrics:
+    - mae
+    - rmse
+    - within_range_pct
+    - accuracy_by_confidence
+
+  # Comparison baselines
+  compare_to:
+    - espn
+    - yahoo
+    - fantasypros
+
+# System settings
+system:
+  version: "1.0.0"
+  debug_mode: false
+  max_workers: 4
+  cache_directory: data/cache
+  temp_directory: temp/
